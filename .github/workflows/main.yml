@@ -76,7 +76,7 @@ jobs:
               ref: 'main',
               inputs: {
                 env: 'development',
-                appName: 'docs-chaingpt',
+                appName: 'chaingpt',
                 appProject: 'aelf-docs',
                 commit_sha: 'sha-${{ steps.vars.outputs.short_sha }}',
               }
