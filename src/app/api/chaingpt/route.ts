@@ -1,34 +1,42 @@
 import type {NextRequest} from "next/server";
 import {NextResponse} from "next/server";
 import {Errors, GeneralChat} from '@chaingpt/generalchat';
-import {APP_SETTINGS} from '../../../../appsettings';
-
-const generalchat = new GeneralChat({
-  apiKey: APP_SETTINGS.chainGPT.apiKey as string,
-});
+import { unstable_noStore as noStore } from "next/cache";
 
 interface Context {
   params: undefined;
 }
 
+async function getGeneralChat() {
+  noStore();
+
+  const generalchat = new GeneralChat({
+    apiKey: process.env["CHAINGPT_API_KEY"] as string,
+  });
+
+  return generalchat;
+}
+
 async function chainGPTChat(question: string) {
+  const generalchat = await getGeneralChat();
+
   return new Promise(async (resolve, reject) => {
     try {
       const stream = await generalchat.createChatStream({
         question: question, // 'Explain quantum computing in simple terms',
-        chatHistory: "off"
+        chatHistory: "off",
       });
-      let data = '';
-      stream.on('data', (chunk: any) => {
+      let data = "";
+      stream.on("data", (chunk: any) => {
         console.log(chunk.toString());
         data += chunk.toString();
       });
-      stream.on('end', () => {
+      stream.on("end", () => {
         console.log("Stream ended");
         resolve(data);
       });
     } catch (error) {
-      console.log('error:', error);
+      console.log("error:", error);
       if (error instanceof Errors.GeneralChatError) {
         reject(error.message);
       }
